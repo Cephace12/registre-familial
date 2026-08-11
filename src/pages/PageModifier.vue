@@ -53,13 +53,34 @@ onMounted(async () => {
   chargement.value = false
 })
 
-function surChangementPhoto(event) {
+function comprimer(fichier) {
+  return new Promise((resolve) => {
+    const img = new Image()
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      img.src = e.target.result
+      img.onload = () => {
+        const MAX = 500
+        let { width, height } = img
+        if (width > height && width > MAX) { height = Math.round(height * MAX / width); width = MAX }
+        else if (height > MAX) { width = Math.round(width * MAX / height); height = MAX }
+        const canvas = document.createElement('canvas')
+        canvas.width = width; canvas.height = height
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+        resolve(canvas.toDataURL('image/jpeg', 0.70))
+      }
+    }
+    reader.readAsDataURL(fichier)
+  })
+}
+
+async function surChangementPhoto(event) {
   const fichier = event.target.files?.[0]
   if (!fichier) return
   if (!fichier.type.startsWith('image/')) { erreur.value = "Ce fichier n'est pas une image."; return }
-  const lecteur = new FileReader()
-  lecteur.onload = () => { form.photo = lecteur.result; photo.value = lecteur.result }
-  lecteur.readAsDataURL(fichier)
+  const compresse = await comprimer(fichier)
+  form.photo = compresse
+  photo.value = compresse
 }
 
 function valider() {
