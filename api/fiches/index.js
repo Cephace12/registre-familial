@@ -1,7 +1,10 @@
 import { neon } from '@neondatabase/serverless'
 import { randomUUID } from 'crypto'
 
-const sql = neon(process.env.DATABASE_URL)
+function getSql() {
+  if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL non défini')
+  return neon(process.env.DATABASE_URL)
+}
 
 function toFiche(r) {
   return {
@@ -24,6 +27,8 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end()
 
   try {
+    const sql = getSql()
+
     if (req.method === 'GET') {
       const rows = await sql`SELECT * FROM fiches ORDER BY datenaissance ASC`
       return res.json(rows.map(toFiche))
@@ -45,6 +50,7 @@ export default async function handler(req, res) {
 
     res.status(405).json({ error: 'Méthode non autorisée' })
   } catch (err) {
+    console.error('[API /fiches]', err)
     res.status(500).json({ error: err.message })
   }
 }
