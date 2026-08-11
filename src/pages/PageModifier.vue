@@ -15,6 +15,7 @@ const LIENS = [
 
 const chargement = ref(true)
 const erreur     = ref('')
+const succes     = ref(false)
 const photo      = ref(null)
 const fileInput  = ref(null)
 const form = reactive({
@@ -101,7 +102,8 @@ async function soumettre() {
   erreur.value = ''
   if (!valider()) return
   await modifierFiche(route.params.id, { ...form })
-  router.push(`/registre/${route.params.id}`)
+  succes.value = true
+  setTimeout(() => router.push(`/registre/${route.params.id}`), 1800)
 }
 </script>
 
@@ -194,6 +196,12 @@ async function soumettre() {
           <p v-if="form.lienParente === 'fils'" class="m-0 px-3 py-2 bg-forest/6 border border-forest/20 text-forest text-[0.78rem] rounded-[3px]">
             Pour un fils direct du Grand-Père, le nom du père n'est pas requis.
           </p>
+
+          <!-- Succès -->
+          <div v-if="succes"
+            class="px-4 py-3 bg-forest/10 border border-forest/30 text-forest rounded-[4px] flex items-center gap-2 text-[0.88rem] font-medium">
+            <span>✓</span> Modifications enregistrées. Redirection en cours…
+          </div>
 
           <!-- Erreur -->
           <p v-if="erreur" role="alert" class="m-0 px-2.5 py-2 bg-danger/8 border border-danger/30 text-danger text-[0.82rem] rounded-[3px]">{{ erreur }}</p>
