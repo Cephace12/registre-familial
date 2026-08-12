@@ -24,6 +24,12 @@ const LIEN_BADGE = {
   'arriere-petit-fils': 'bg-ochre/10 text-ochre-dark'
 }
 
+const SITUATION_LABEL = {
+  'celibataire': 'Célibataire',
+  'marie':       'Marié(e)',
+  'divorce':     'Divorcé(e)'
+}
+
 function formaterDate(dateStr) {
   if (!dateStr) return '—'
   return new Date(dateStr).toLocaleDateString('fr-FR', {
@@ -148,6 +154,23 @@ onUnmounted(() => window.removeEventListener('keyup', onKeyup))
               <div v-if="fiche.nomMaman">
                 <dt class="font-mono text-[0.62rem] uppercase tracking-[0.1em] text-forest opacity-70 mb-0.5">Mère</dt>
                 <dd class="text-[0.95rem] text-ink m-0">{{ fiche.nomMaman }}</dd>
+              </div>
+              <div v-if="fiche.profession">
+                <dt class="font-mono text-[0.62rem] uppercase tracking-[0.1em] text-forest opacity-70 mb-0.5">Profession</dt>
+                <dd class="text-[0.95rem] text-ink m-0">{{ fiche.profession }}</dd>
+              </div>
+              <div v-if="fiche.situationMatrimoniale">
+                <dt class="font-mono text-[0.62rem] uppercase tracking-[0.1em] text-forest opacity-70 mb-0.5">Situation matrimoniale</dt>
+                <dd class="text-[0.95rem] text-ink m-0">
+                  {{ SITUATION_LABEL[fiche.situationMatrimoniale] ?? fiche.situationMatrimoniale }}
+                </dd>
+              </div>
+              <div v-if="fiche.situationMatrimoniale === 'marie'">
+                <dt class="font-mono text-[0.62rem] uppercase tracking-[0.1em] text-forest opacity-70 mb-0.5">Nombre d'enfants</dt>
+                <dd class="m-0">
+                  <span class="font-display text-[1.4rem] font-semibold text-ochre-dark leading-none">{{ fiche.nombreEnfants ?? 0 }}</span>
+                  <span class="text-[0.75rem] text-charcoal opacity-60 ml-1">enfant{{ fiche.nombreEnfants > 1 ? 's' : '' }}</span>
+                </dd>
               </div>
             </dl>
           </div>

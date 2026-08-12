@@ -15,6 +15,9 @@ function toFiche(r) {
     nomMaman: r.nommaman ?? null,
     photo: r.photo ?? null,
     lienParente: r.lienparente ?? 'fils',
+    profession: r.profession ?? null,
+    situationMatrimoniale: r.situationmatrimoniale ?? null,
+    nombreEnfants: r.nombreenfants ?? null,
     creeLe: r.creele
   }
 }
@@ -37,12 +40,15 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-      const { nom, prenoms, dateNaissance, nomPapa, nomMaman, photo, lienParente } = req.body
+      const { nom, prenoms, dateNaissance, nomPapa, nomMaman, photo, lienParente, profession, situationMatrimoniale, nombreEnfants } = req.body
       const [row] = await sql`
         UPDATE fiches
         SET nom = ${nom}, prenoms = ${prenoms}, datenaissance = ${dateNaissance},
             nompapa = ${nomPapa ?? null}, nommaman = ${nomMaman ?? null},
-            photo = ${photo ?? null}, lienparente = ${lienParente ?? 'fils'}
+            photo = ${photo ?? null}, lienparente = ${lienParente ?? 'fils'},
+            profession = ${profession ?? null},
+            situationmatrimoniale = ${situationMatrimoniale ?? null},
+            nombreenfants = ${nombreEnfants !== '' && nombreEnfants != null ? Number(nombreEnfants) : null}
         WHERE id = ${id}
         RETURNING *
       `

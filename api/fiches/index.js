@@ -16,6 +16,9 @@ function toFiche(r) {
     nomMaman: r.nommaman ?? null,
     photo: r.photo ?? null,
     lienParente: r.lienparente ?? 'fils',
+    profession: r.profession ?? null,
+    situationMatrimoniale: r.situationmatrimoniale ?? null,
+    nombreEnfants: r.nombreenfants ?? null,
     creeLe: r.creele
   }
 }
@@ -35,14 +38,17 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const { nom, prenoms, dateNaissance, nomPapa, nomMaman, photo, lienParente } = req.body
+      const { nom, prenoms, dateNaissance, nomPapa, nomMaman, photo, lienParente, profession, situationMatrimoniale, nombreEnfants } = req.body
       const id = randomUUID()
       const creeLe = new Date().toISOString()
       const [row] = await sql`
-        INSERT INTO fiches (id, nom, prenoms, datenaissance, nompapa, nommaman, photo, lienparente, creele)
+        INSERT INTO fiches (id, nom, prenoms, datenaissance, nompapa, nommaman, photo, lienparente, profession, situationmatrimoniale, nombreenfants, creele)
         VALUES (${id}, ${nom}, ${prenoms}, ${dateNaissance},
                 ${nomPapa ?? null}, ${nomMaman ?? null}, ${photo ?? null},
-                ${lienParente ?? 'fils'}, ${creeLe})
+                ${lienParente ?? 'fils'}, ${profession ?? null},
+                ${situationMatrimoniale ?? null},
+                ${nombreEnfants !== '' && nombreEnfants != null ? Number(nombreEnfants) : null},
+                ${creeLe})
         RETURNING *
       `
       return res.status(201).json(toFiche(row))

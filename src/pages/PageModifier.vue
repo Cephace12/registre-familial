@@ -13,6 +13,12 @@ const LIENS = [
   { value: 'arriere-petit-fils', label: 'Arrière-petit-fils',       gen: '3ème génération' }
 ]
 
+const SITUATIONS = [
+  { value: 'celibataire', label: 'Célibataire' },
+  { value: 'marie',       label: 'Marié(e)' },
+  { value: 'divorce',     label: 'Divorcé(e)' }
+]
+
 const chargement = ref(true)
 const erreur     = ref('')
 const succes     = ref(false)
@@ -20,7 +26,10 @@ const photo      = ref(null)
 const fileInput  = ref(null)
 const form = reactive({
   nom: '', prenoms: '', dateNaissance: '',
-  nomPapa: '', nomMaman: '', photo: null, lienParente: 'fils'
+  nomPapa: '', nomMaman: '', photo: null, lienParente: 'fils',
+  profession: '',
+  situationMatrimoniale: '',
+  nombreEnfants: ''
 })
 
 watch(() => form.lienParente, (v) => { if (v === 'fils') form.nomPapa = '' })
@@ -42,13 +51,16 @@ onMounted(async () => {
   }
 
   Object.assign(form, {
-    nom:          fiche.nom,
-    prenoms:      fiche.prenoms,
-    dateNaissance: fiche.dateNaissance,
-    nomPapa:      fiche.nomPapa  || '',
-    nomMaman:     fiche.nomMaman || '',
-    photo:        fiche.photo    || null,
-    lienParente:  fiche.lienParente || 'fils'
+    nom:                   fiche.nom,
+    prenoms:               fiche.prenoms,
+    dateNaissance:         fiche.dateNaissance,
+    nomPapa:               fiche.nomPapa  || '',
+    nomMaman:              fiche.nomMaman || '',
+    photo:                 fiche.photo    || null,
+    lienParente:           fiche.lienParente || 'fils',
+    profession:            fiche.profession || '',
+    situationMatrimoniale: fiche.situationMatrimoniale || '',
+    nombreEnfants:         fiche.nombreEnfants ?? ''
   })
   photo.value = fiche.photo || null
   chargement.value = false
@@ -94,6 +106,12 @@ function valider() {
   if (!form.nomMaman.trim()) { erreur.value = 'Le nom de la mère est obligatoire.'; return false }
   if (form.lienParente !== 'fils' && !form.nomPapa.trim()) {
     erreur.value = 'Le nom du père est obligatoire.'; return false
+  }
+  if (!form.situationMatrimoniale) {
+    erreur.value = 'La situation matrimoniale est obligatoire.'; return false
+  }
+  if (form.situationMatrimoniale === 'marie' && form.nombreEnfants === '') {
+    erreur.value = 'Le nombre d\'enfants est obligatoire.'; return false
   }
   return true
 }
@@ -196,6 +214,41 @@ async function soumettre() {
           <p v-if="form.lienParente === 'fils'" class="m-0 px-3 py-2 bg-forest/6 border border-forest/20 text-forest text-[0.78rem] rounded-[3px]">
             Pour un fils direct du Grand-Père, le nom du père n'est pas requis.
           </p>
+
+          <!-- Profession -->
+          <div class="flex flex-col gap-1.5">
+            <label for="mod-profession" class="text-[0.75rem] font-semibold text-ink uppercase tracking-[0.03em]">Profession</label>
+            <input id="mod-profession" v-model.trim="form.profession" type="text" placeholder="Ex. Enseignant, Médecin…"
+              class="border border-line rounded-[3px] px-2.5 py-[9px] font-sans text-[0.92rem] bg-parchment text-charcoal focus:outline focus:outline-2 focus:outline-ochre focus:outline-offset-[1px] focus:bg-card" />
+          </div>
+
+          <!-- Situation matrimoniale -->
+          <div class="flex flex-col gap-1.5">
+            <span class="text-[0.75rem] font-semibold text-ink uppercase tracking-[0.03em]">
+              Situation matrimoniale <span class="text-danger">*</span>
+            </span>
+            <div class="flex gap-2">
+              <label
+                v-for="opt in SITUATIONS" :key="opt.value"
+                class="flex-1 flex items-center justify-center px-2 py-2.5 border rounded-[3px] cursor-pointer transition-colors duration-150 text-center"
+                :class="form.situationMatrimoniale === opt.value
+                  ? 'border-ink bg-ink text-card'
+                  : 'border-line bg-parchment text-charcoal hover:border-charcoal'"
+              >
+                <input type="radio" v-model="form.situationMatrimoniale" :value="opt.value" class="sr-only" />
+                <span class="text-[0.82rem] font-medium">{{ opt.label }}</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Nombre d'enfants (si marié) -->
+          <div v-if="form.situationMatrimoniale === 'marie'" class="flex flex-col gap-1.5">
+            <label for="mod-nb-enfants" class="text-[0.75rem] font-semibold text-ink uppercase tracking-[0.03em]">
+              Nombre d'enfants <span class="text-danger">*</span>
+            </label>
+            <input id="mod-nb-enfants" v-model.number="form.nombreEnfants" type="number" min="0" placeholder="0"
+              class="border border-line rounded-[3px] px-2.5 py-[9px] font-sans text-[0.92rem] bg-parchment text-charcoal focus:outline focus:outline-2 focus:outline-ochre focus:outline-offset-[1px] focus:bg-card w-32" />
+          </div>
 
           <!-- Succès -->
           <div v-if="succes"
